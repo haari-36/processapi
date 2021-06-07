@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="20e876d8-471a-49a0-b74f-8f83e2d0f4f2" >
+		<http:listener-connection host="0.0.0.0" port="8082" />
+	</http:listener-config>
+	<http:request-config name="HTTP_Request_configuration" doc:name="HTTP Request configuration" doc:id="e5d013ac-fb84-4367-b366-5af0ebe8ecb9" >
+		<http:request-connection host="0.0.0.0" port="8081" />
+	</http:request-config>
+	<http:request-config name="HTTP_Request_configuration1" doc:name="HTTP Request configuration" doc:id="c646ec57-e6e7-4b0a-a9b6-c52d021cac9f" >
+		<http:request-connection host="0.0.0.0" port="8083" />
+	</http:request-config>
+	<flow name="processapiFlow" doc:id="b16740ce-97e7-4983-a167-1302ba358b29" >
+		<http:listener doc:name="Listener" doc:id="c0e8dd20-d490-4aa7-9c80-05751f2e0403" path="/processapi" allowedMethods="GET" config-ref="HTTP_Listener_config"/>
+		<logger level="INFO" doc:name="Logger" doc:id="1b746034-1fb1-4bd0-82d7-4e72c0b37399" message='#["before  request"]'/>
+		<http:request method="GET" doc:name="Request" doc:id="cb796ed2-b2d0-4f71-8cec-a32ccaf298f1" path="/systemapi" config-ref="HTTP_Request_configuration"/>
+		<ee:transform doc:name="Transform Message" doc:id="0b8233da-df1e-494c-91bb-032a096dab3b" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<http:request method="POST" doc:name="Request" doc:id="05488d33-de3c-4ee0-b2c7-9213a00c6f40" config-ref="HTTP_Request_configuration1" path="/dbsysapi" outputMimeType="application/csv"/>
+		<logger level="INFO" doc:name="Logger" doc:id="6bb2784c-4e92-494b-9f49-95f73a7d8570" message='#[payload]'/>
+	</flow>
+</mule>
